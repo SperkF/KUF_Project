@@ -1,5 +1,9 @@
 ﻿  DmxDllAccess.cpp
   Server.cpp
   ServerCallbackHandler.cpp
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(148,25): warning C4309: "=": Verkürzung eines konstanten Wertes
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(196,29): warning C4309: "=": Verkürzung eines konstanten Wertes
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(203,29): warning C4309: "=": Verkürzung eines konstanten Wertes
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(214,25): warning C4309: "=": Verkürzung eines konstanten Wertes
   Code wird generiert...
-  Server.vcxproj -> C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\Code\MME2019\Debug\Server.exe
+  Server.vcxproj -> C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Debug\Server.exe

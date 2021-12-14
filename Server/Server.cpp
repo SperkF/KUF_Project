@@ -5,6 +5,10 @@
 
 #include "ServerCallbackHandler.h"
 
+
+
+
+
 int main()
 {
     std::cout << "Hello World!\n";
@@ -24,7 +28,7 @@ int main()
 
     while (true) 
     {
-      //TODO: rewrite DataReceived() Callbakc .. is called from ProcessMessage()
+      //TODO: rewrite DataReceived() Callback .. is called from ProcessMessage()
       // wait some time - msecs
       OS_Sleep(100);
 

@@ -1,4 +1,5 @@
 ﻿  CallbackHandler.cpp
   Client.cpp
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Client\Client.cpp(76,10): warning C4101: "sndMessage": Unreferenzierte lokale Variable
   Code wird generiert...
-  Client.vcxproj -> C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\Code\MME2019\Debug\Client.exe
+  Client.vcxproj -> C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Debug\Client.exe
