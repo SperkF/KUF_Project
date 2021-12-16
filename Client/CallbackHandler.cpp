@@ -12,27 +12,19 @@ using std::to_string;
 using namespace std;
 
 
-//used for debugging
-static void errorPrinter(uint8_t errCode)
-{
-	std::cout << "received errorMessage: " << to_string(uint8_t(errCode)) << std::endl;
-} 
 
 void CallbackHandler::NewConnectionCB(const char *hostname)
 {
 	connectionState = conState_e::CONNECTED;
-	if (DMX_Config != NULL)
-	{
-		free(DMX_Config);
-		DMX_Config = NULL;
-	}
   std::cout << "got new connection from " << hostname << std::endl;
 }
 
 void CallbackHandler::ConnectionLost()
 {
-  std::cout << "connection lost" << std::endl;
-  connectionState = conState_e::DISCONNECTED;
+	system("cls");
+	std::cout << "connection lost" << std::endl;
+	OS_Sleep(3000);
+	connectionState = conState_e::DISCONNECTED;
 }
 
 void CallbackHandler::DataReceived(const char* data, unsigned len)
@@ -71,7 +63,7 @@ void CallbackHandler::DataReceived(const char* data, unsigned len)
 			headerLen = 3; //echo cmd + err code + data len
 			std::cout << "server answered Handshake" << std::endl;
 			DMX_Conifg_len = (len - headerLen) / 2;
-			if (DMX_Config == NULL)
+			if (DMX_Config == NULL) //allocate only once!
 			{
 				DMX_Config = (spotStruct2_t*)calloc(DMX_Conifg_len, sizeof(spotStruct2_t));
 				for (int i = headerLen, j = 0; i < len - 1; j++)
@@ -79,20 +71,37 @@ void CallbackHandler::DataReceived(const char* data, unsigned len)
 					(DMX_Config + j)->spotIndex = data[i];
 					i++;
 					(DMX_Config + j)->featureCount = data[i];
-					(DMX_Config + j)->featureArray = (uint8_t*)calloc(data[i], sizeof(uint8_t));
+					(DMX_Config + j)->featureArray = (uint8_t*)calloc((DMX_Config + j)->featureCount, sizeof(uint8_t));
 					switch (lightState)
 					{
 					case initState_e::LIGHTS_ALL_OFF:
-						memset((DMX_Config + j)->featureArray, 0, data[i]);
+						memset((DMX_Config + j)->featureArray, 0, (DMX_Config + j)->featureCount);
 						break;
 					case initState_e::LIGHTS_ALL_ON:
-						memset((DMX_Config + j)->featureArray, 255, data[i]);
+						memset((DMX_Config + j)->featureArray, 255, (DMX_Config + j)->featureCount);
 						break;
 					case initState_e::LIGHT_LEAVE_AS_IS:
 						break;
 					}
 					i++;
 				}
+			}
+			else {
+				for (int i = 0; i < DMX_Conifg_len; i++)
+				{
+					switch (lightState)
+					{
+					case initState_e::LIGHTS_ALL_OFF:
+						memset((DMX_Config + i)->featureArray, 0, (DMX_Config + i)->featureCount);
+						break;
+					case initState_e::LIGHTS_ALL_ON:
+						memset((DMX_Config + i)->featureArray, 255, (DMX_Config + i)->featureCount);
+						break;
+					case initState_e::LIGHT_LEAVE_AS_IS:
+						break;
+					}
+				}
+
 			}
 
 
@@ -115,7 +124,7 @@ void CallbackHandler::DataReceived(const char* data, unsigned len)
 				//find matching spot, and check if the requested feature is within range of spots features
 				if ((DMX_Config + i)->spotIndex == data[2] && data[3] <= (DMX_Config + i)->featureCount)
 				{
-					(DMX_Config + i)->featureArray[data[3]] = data[4];
+					(DMX_Config + i)->featureArray[(uint8_t)data[3]-1] = data[4];
 					break;
 				}
 			}

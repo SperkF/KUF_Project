@@ -2,10 +2,10 @@
   Server.cpp
   ServerCallbackHandler.cpp
 C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(166,25): warning C4309: "=": Verkürzung eines konstanten Wertes
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(215,29): warning C4309: "=": Verkürzung eines konstanten Wertes
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(226,29): warning C4309: "=": Verkürzung eines konstanten Wertes
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(269,29): warning C4309: "=": Verkürzung eines konstanten Wertes
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(277,29): warning C4309: "=": Verkürzung eines konstanten Wertes
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(286,25): warning C4309: "=": Verkürzung eines konstanten Wertes
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(229,29): warning C4309: "=": Verkürzung eines konstanten Wertes
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(240,29): warning C4309: "=": Verkürzung eines konstanten Wertes
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(283,29): warning C4309: "=": Verkürzung eines konstanten Wertes
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(291,29): warning C4309: "=": Verkürzung eines konstanten Wertes
+C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Server\ServerCallbackHandler.cpp(300,25): warning C4309: "=": Verkürzung eines konstanten Wertes
   Code wird generiert...
   Server.vcxproj -> C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Debug\Server.exe

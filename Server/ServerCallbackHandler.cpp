@@ -168,14 +168,28 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
 
         //DATA
         for (uint8_t i = 0; i < DMX_Conifg_len; i++) {
-            *(retMessage + (3 + i*2)) = DMX_Config[i].spotIndex;
-            *(retMessage + (3 + i*2 +1)) = DMX_Config[i].featureCount;
+            *(retMessage + (3 + i * 2)) = DMX_Config[i].spotIndex;
+            *(retMessage + (3 + i * 2 + 1)) = DMX_Config[i].featureCount;
         }
 
         //Needed for lower layer functions ->require string delimiter
         //highest array index = arrayLen-1
-        retMessage[retMessageLen-1] = '\0';
+        retMessage[retMessageLen - 1] = '\0';
 
+        for (int i = 0; i < DMX_Conifg_len; i++)
+        {
+            switch (data[1])
+            {
+            case ARG_CS_TURN_ALL_LIGHT_ON:
+                memset((DMX_Config + i)->featureArray, 255, (DMX_Config + i)->featureCount);
+                break;
+            case ARG_CS_TURN_ALL_LIGHT_OFF:
+                memset((DMX_Config + i)->featureArray, 0, (DMX_Config + i)->featureCount);
+                break;
+            case ARG_CS_LEAVE_LIGHT_IN_CUR_STATE:
+                break;
+            }
+        }
         break;
 
 
@@ -190,7 +204,7 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
             //find matching spot, and check if the requested feature is within range of spots features
             if ((DMX_Config + i)->spotIndex == sentSpotIndex && sentFeatureIndex <= (DMX_Config + i)->featureCount)
             {
-                requestedFeatureValue = (DMX_Config + i)->featureArray[sentFeatureIndex];
+                requestedFeatureValue = (DMX_Config + i)->featureArray[sentFeatureIndex-1];
                 cout << "requested feature value" << to_string(requestedFeatureValue) << "was sent" << endl;
                 argumentCheck = true;
                 break;
@@ -241,8 +255,8 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
             //find matching spot, and check if the requested feature is within range of spots features
             if ((DMX_Config + i)->spotIndex == sentSpotIndex && sentFeatureIndex <= (DMX_Config + i)->featureCount)
             {
-                (DMX_Config + i)->featureArray[sentFeatureIndex] = sentFeatureValue;
-                cout << "Feature can be set to value: " << to_string((DMX_Config + i)->featureArray[sentFeatureIndex]) << endl;
+                (DMX_Config + i)->featureArray[sentFeatureIndex-1] = sentFeatureValue;
+                cout << "Feature can be set to value: " << to_string((DMX_Config + i)->featureArray[sentFeatureIndex-1]) << endl;
                 argumentCheck = true;
                 break;
             }
@@ -252,7 +266,7 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
         //if not -> reply with error code
         if (argumentCheck == true)
         {
- 
+
             //set feature
             /*
             *

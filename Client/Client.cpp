@@ -23,15 +23,22 @@ enum class menuOptions_t
 
 using namespace std;
 
-static void contextMenu(int asterixIndex);
-static void buildStartMenu(void);
-static void buildSendValueMenu(void);
-static void buildSentValueMenu(void);
+
 
 static char* handShakeMenu(menuOptions_t* menuContext, int* messageLen);
 static spotStruct2_t* spotsMenu(menuOptions_t* menuContext);
 static char* featuresMenu(menuOptions_t* menuContext, spotStruct2_t* selectedSpot, int* messageLen);
 
+
+/*
+* start client <server IP>
+* 
+* upon start, the application tries to connect to the server specified by the IP that was passed
+* as startargument (on fixed port 8000)
+* 
+* If no connection can be made, or in case the connection breaks, the program terminates
+* 
+*/
 int main(int argc, char* argv[])
 {
 
@@ -56,13 +63,9 @@ int main(int argc, char* argv[])
 	Communication myComm(myCallbackHandler);
 
 	
-
-
-
 	int messageLen = 0;
 	char* sndMessage = NULL;
 	spotStruct2_t* selectedSpot = NULL;
-	initState_e lightState = initState_e::LIGHT_LEAVE_AS_IS;
 
 	//attemp to connect to server ->server must be running before client
 	bool res = myComm.Connect(servername, serverPort);
@@ -71,89 +74,45 @@ int main(int argc, char* argv[])
 	char selectedOption = '1';
 	if (res == true)
 	{
-		while (tryToConnect == true)
-		{
-			if (res == false) {
-				std::cout << "please enter number corresponding to menu option" << endl;
-
-				//display menuOptions
-				std::cout << "\n\n\n" << endl;
-
-				std::cout << "Lost Connection" << endl;
-				std::cout << "(1) Try to reconnect" << endl;
-				std::cout << "(2) terminate client" << endl;
-
-				//go up some line on the terminal to wait for user input
-				for (int i = 0; i < 3 + 3; i++)
-				{
-					cout << "\x1b[A";
-				}
-				std::cout << "INPUT please: ";
-				selectedOption = fgetc(stdin);
-				fflush(stdin);
-
-				if (selectedOption == '1')
-				{
-					system("cls");
-					res = myComm.Connect(servername, serverPort);
-					if (res != true)
-					{
-						OS_Sleep(5000);
-					}
-					OS_Sleep(1000);
-				}
-				else if (selectedOption == '2')
-				{
-					tryToConnect = false;
-				}
-			}
-			else {
-				std::string inputstring;
-				menuOptions_t menuContext;
-				menuContext = menuOptions_t::HANDSHAKE_MENU;
-				do {
-					fflush(stdin);
-					system("cls");
-					switch (menuContext)
-					{
-					case menuOptions_t::HANDSHAKE_MENU:
-						sndMessage = handShakeMenu(&menuContext, &messageLen);
-						break;
-					case menuOptions_t::SPOTS_MENU:
-						selectedSpot = spotsMenu(&menuContext);
-						break;
-					case menuOptions_t::FEATURES_MENU:
-						if (selectedSpot != NULL)
-						{
-							sndMessage = featuresMenu(&menuContext, selectedSpot, &messageLen);
-						}
-						break;
-					default:
-						break;
-					}
-					if (sndMessage != NULL)
-					{
-						myComm.WriteToPartner(&sndMessage[0], sizeof(messageLen));
-						free(sndMessage);
-						sndMessage = NULL;
-					}
-
-					// wait some time - msecs
-					//WARNING: in case this delay is to short, the communication wont work properly
-					OS_Sleep(1000);
-
-					// check for answers
-					while (myComm.IsMessagePending())
-						myComm.ProcessMessage();//takes message and calls DataReceived CallBack
-
-				} while (connectionState == conState_e::CONNECTED && res == true);
-				//myComm.Disconnect(); //kill thread?
-				res = false;
-			}
-			myComm.Disconnect(); //kill thread?
+		std::string inputstring;
+		menuOptions_t menuContext;
+		menuContext = menuOptions_t::HANDSHAKE_MENU;
+		do {
+			cin.clear();
 			system("cls");
-			OS_Sleep(300);
-		}
+			switch (menuContext)
+			{
+			case menuOptions_t::HANDSHAKE_MENU:
+				sndMessage = handShakeMenu(&menuContext, &messageLen);
+				break;
+			case menuOptions_t::SPOTS_MENU:
+				selectedSpot = spotsMenu(&menuContext);
+				break;
+			case menuOptions_t::FEATURES_MENU:
+				if (selectedSpot != NULL)
+				{
+					sndMessage = featuresMenu(&menuContext, selectedSpot, &messageLen);
+				}
+				break;
+			default:
+				break;
+			}
+			if (sndMessage != NULL)
+			{
+				myComm.WriteToPartner(&sndMessage[0], sizeof(messageLen));
+				free(sndMessage);
+				sndMessage = NULL;
+			}
+
+			// wait some time - msecs
+			//WARNING: in case this delay is to short, the communication wont work properly
+			OS_Sleep(500);
+
+			// check for answers
+			while (myComm.IsMessagePending())
+				myComm.ProcessMessage();//takes message and calls DataReceived CallBack
+
+		} while (connectionState == conState_e::CONNECTED);
 	}
 
 	if (DMX_Config != NULL)
@@ -166,7 +125,7 @@ int main(int argc, char* argv[])
 		free(DMX_Config);
 		DMX_Config = NULL;
 	}
-	OS_Sleep(1000);
+	//OS_Sleep(1000);
 
 	myComm.Disconnect();
 
@@ -174,15 +133,20 @@ int main(int argc, char* argv[])
 }
 
 
-//instead of menu option Disconnect -> in case user enters "END"..disconnect 
+
 /*
-* MENU 1 ->Start Menu
-* Following actions are possible:
-* (1) Perform Handshake with server *(star when user pressed '1')
-* (2) Disconnect from server
-* enter respective ASCII-character + <enter> for selection
+* select how to perform handshake
+* 
+* ->upon first handshake, memory for DMX_Config struct is allocated inside CallbackHandler.cpp
+* ->depending on the selected lightstate, the featureArray will also get filled with value inside CallbackHanlder.cpp
+* 
+* @params:
+*	menuContext=	address of memoryContext varaible (gets manipulated inside handShakeMenu())
+*	messageLen=		address of int type variable ->function sets the value at the given address to value representing the lenght of the
+*					char array that it returns
+* returns:	messge to send to server
 */
-#define HANDSHAKE_MENU_ITEM_NO 6
+#define HANDSHAKE_MENU_ITEM_NO 3
 static char* handShakeMenu(menuOptions_t* menuContext, int* messageLen) {
 	//should take place behind the scenes in final version
 	std::cout << "please enter number corresponding to menu option" << endl;
@@ -191,10 +155,7 @@ static char* handShakeMenu(menuOptions_t* menuContext, int* messageLen) {
 	std::string contextMenu[HANDSHAKE_MENU_ITEM_NO] = {
 		"perform Handshake (leave lights as is)",
 		"perform Handshake (turn all lights on)",
-		"perform Handshake (turn all lights off)",
-		"disconnect from server (leave lights as is)",
-		"disconnect from server (turn all lights on)",
-		"disconnect from server (turn all lights off)" };
+		"perform Handshake (turn all lights off)" };
 	//display menuOptions
 	cout << "\n\n\n" << endl;
 	for (uint8_t i = 0; i < HANDSHAKE_MENU_ITEM_NO; i++)
@@ -242,8 +203,6 @@ static char* handShakeMenu(menuOptions_t* menuContext, int* messageLen) {
 		retMessage[*messageLen - 1] = '\0';
 		break;
 	default:
-		cout << "entered Menu option out of scope.." << endl;
-		OS_Sleep(1000);
 		break;
 	}
 	return &retMessage[0];
@@ -311,7 +270,7 @@ static char* featuresMenu(menuOptions_t* menuContext, spotStruct2_t* selectedSpo
 	std::cout << "(2) get feature" << std::endl;
 
 	cout << "\n\n\n" << endl;
-	for (uint8_t i = 0; i < selectedSpot->featureCount - 1; i++)
+	for (uint8_t i = 0; i < selectedSpot->featureCount; i++)
 	{
 		cout << " (" << to_string((uint8_t)(i + 1)) << ") " << "feature available; value: " << to_string((uint8_t)(selectedSpot->featureArray[i])) << endl;
 		//TODO save writen value on client side
@@ -351,7 +310,7 @@ static char* setfeature(menuOptions_t* menuContext, spotStruct2_t* selectedSpot,
 
 	//display menuOptions
 	cout << "\n\n\n" << endl;
-	for (uint8_t i = 0; i < selectedSpot->featureCount - 1; i++)
+	for (uint8_t i = 0; i < selectedSpot->featureCount; i++)
 	{
 		cout << " (" << to_string((uint8_t)(i + 1)) << ") " << "feature available; value: " << to_string((uint8_t)(selectedSpot->featureArray[i])) << endl;
 		//TODO save writen value on client side
@@ -369,7 +328,7 @@ static char* setfeature(menuOptions_t* menuContext, spotStruct2_t* selectedSpot,
 	{
 		*menuContext = menuOptions_t::SPOTS_MENU;
 	}
-	else if (featureIndex > 0 && featureIndex < selectedSpot->featureCount - 1)
+	else if (featureIndex > 0 && featureIndex <= selectedSpot->featureCount)
 	{
 		cout << "to value: ";
 		int featureValue = 0;
@@ -382,7 +341,7 @@ static char* setfeature(menuOptions_t* menuContext, spotStruct2_t* selectedSpot,
 		retMessage[2] = featureIndex;
 		retMessage[3] = (uint8_t)featureValue;
 		retMessage[*messageLen - 1] = '\0';
-		*(selectedSpot->featureArray + featureIndex) = featureValue;
+		selectedSpot->featureArray[featureIndex-1] = featureValue;
 	}
 
 	else
@@ -402,7 +361,7 @@ static char* getfeature(menuOptions_t* menuContext, spotStruct2_t* selectedSpot,
 
 	//display menuOptions
 	cout << "\n\n\n" << endl;
-	for (uint8_t i = 0; i < selectedSpot->featureCount - 1; i++)
+	for (uint8_t i = 0; i < selectedSpot->featureCount; i++)
 	{
 		cout << " (" << to_string((uint8_t)(i + 1)) << ") " << "feature available; value: " << to_string((uint8_t)(selectedSpot->featureArray[i])) << endl;
 		//TODO save writen value on client side
@@ -420,7 +379,7 @@ static char* getfeature(menuOptions_t* menuContext, spotStruct2_t* selectedSpot,
 	{
 		*menuContext = menuOptions_t::SPOTS_MENU;
 	}
-	else if (featureIndex > 0 && featureIndex < selectedSpot->featureCount - 1)
+	else if (featureIndex > 0 && featureIndex <= selectedSpot->featureCount)
 	{
 		//selectedSpot = (DMX_Config + selectedOption - 1);
 		*messageLen = 3 + STRING_DELIMITER_SIZE;

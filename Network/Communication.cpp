@@ -4,6 +4,8 @@
 #include <memory>
 #include <iostream>
 
+#undef SHOWMESSAGE 
+
 void WorkThreadWrapper(Communication *ptr)
 {
   ptr->workFunc();
