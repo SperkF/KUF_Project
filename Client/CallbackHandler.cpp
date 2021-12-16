@@ -5,90 +5,125 @@
 
 
 
-#define FS_DEBUG 1
-
-
-//CLIENT TO SERVER Commands
-#define CMD_HANDSHAKE_REQUEST 0x01
-#define CMD_SPOTINFO_REQUEST 0x02
-
-//SERVER TO CLIENT Commands
-#define CMD_HANDSHAKE_REPLY 0xF1
-
-//ARGUMETNS AND ERRORCODES
-#define ARG_BONA_FIDE 0xBF
-
-
 using std::cout; using std::cin;
 using std::endl; using std::string;
 using std::to_string;
 
 using namespace std;
 
-void errorPrinter(uint8_t errCode)
+
+//used for debugging
+static void errorPrinter(uint8_t errCode)
 {
-	std::cout << "received errorMessage: " << errCode << std::endl;
+	std::cout << "received errorMessage: " << to_string(uint8_t(errCode)) << std::endl;
 } 
 
 void CallbackHandler::NewConnectionCB(const char *hostname)
 {
+	connectionState = conState_e::CONNECTED;
+	if (DMX_Config != NULL)
+	{
+		free(DMX_Config);
+		DMX_Config = NULL;
+	}
   std::cout << "got new connection from " << hostname << std::endl;
 }
 
 void CallbackHandler::ConnectionLost()
 {
   std::cout << "connection lost" << std::endl;
+  connectionState = conState_e::DISCONNECTED;
 }
 
-void CallbackHandler::DataReceived(const char *data, unsigned len)
+void CallbackHandler::DataReceived(const char* data, unsigned len)
 {
-  // here we rely on the fact that the data is a string! -> '\0' terminated
-  //std::cout << "got new data >>" << data << "<< len " << len << std::endl;
+	// here we rely on the fact that the data is a string! -> '\0' terminated
+	//std::cout << "got new data >>" << data << "<< len " << len << std::endl;
 	std::cout << "DATA LEN: " << len << std::endl;
 	std::cout << "reply-command from server " << to_string((uint8_t)data[0]) << std::endl;
 	std::cout << "argument from server " << to_string((uint8_t)data[1]) << std::endl;
 
-  switch ((uint8_t)data[0])
-  {
-  case CMD_HANDSHAKE_REPLY:
-	  std::cout << "server answered Handshake" << std::endl;
-	  std::cout << "highest spot index: " << to_string((uint8_t)data[1]) << std::endl;
-	  break;
-  case 0xF2:
-	  std::cout << "server answered Request Spot Inforamtion" << std::endl;
-	  std::cout << "highest feature index: " << data[1] << std::endl;
-	  break;
-  case 0xF3:
-	  if (data[1] != 0xBF)
-	  {
-		  errorPrinter(data[1]);
-	  }
-	  else {
-		  std::cout << "server answered Request Feature Inforamtion" << std::endl;
-		  std::cout << "requested Feature No.: " << to_string((uint8_t)data[1]) << " is available" << std::endl;
-	  }
-	  break;
-  case 0xF4: 
-	  if (data[1] != 0xBF)
-	  {
-		  errorPrinter(data[1]);
-	  }
-	  else{
-		std::cout << "Feature set succefully" << std::endl;
-	  }
-	  break;
-  case 0xF5:
-	  if (data[1] != 0xBF)
-	  {
-		  errorPrinter(data[1]);
-	  }
-	  else {
-		  std::cout << "server acknoledged Disconnect enquiry" << std::endl;
-	  }
-		  break;
-  default:
-	  std::cout << "ERROR: default-case inside Client: CallbackHandler.cpp swtich() was hit" << std::endl;
-	  break;
+	//check reply error code and display message if something went wrong
+	switch ((uint8_t)data[1]) {
+	case ERR_SC_BONA_FIDE:
+		strncpy_s(errMessage, ERR_MESSAGE_LEN, "Command executed succesfully", strlen("Command executed succesfully"));
+		break;
+	case ERR_SC_CMD_UNKNOWN:
+		strncpy_s(errMessage, ERR_MESSAGE_LEN, "Error Command Unkonwn", strlen("Error Command Unkonwn"));
+		break;
+	case ERR_SC_ARG_ERROR:
+		strncpy_s(errMessage, ERR_MESSAGE_LEN, "Error Argument unusable", strlen("Error Argument unusable"));
+		break;
+	case ERR_SC_SUPERGAU:
+		strncpy_s(errMessage, ERR_MESSAGE_LEN, "Error Supergau", strlen("Error Supergau"));
+		break;
+	}
 
-  }
+
+	//only work with received data if the server ansered with "all good" error reply
+	int headerLen = 0;
+	if ((uint8_t)data[1] == ERR_SC_BONA_FIDE)
+	{
+		//server echos last sent command as first byte of reply message
+		switch ((uint8_t)data[0])
+		{
+		case CMD_CS_HANDSHAKE_REQUEST:
+			headerLen = 3; //echo cmd + err code + data len
+			std::cout << "server answered Handshake" << std::endl;
+			DMX_Conifg_len = (len - headerLen) / 2;
+			if (DMX_Config == NULL)
+			{
+				DMX_Config = (spotStruct2_t*)calloc(DMX_Conifg_len, sizeof(spotStruct2_t));
+				for (int i = headerLen, j = 0; i < len - 1; j++)
+				{
+					(DMX_Config + j)->spotIndex = data[i];
+					i++;
+					(DMX_Config + j)->featureCount = data[i];
+					(DMX_Config + j)->featureArray = (uint8_t*)calloc(data[i], sizeof(uint8_t));
+					switch (lightState)
+					{
+					case initState_e::LIGHTS_ALL_OFF:
+						memset((DMX_Config + j)->featureArray, 0, data[i]);
+						break;
+					case initState_e::LIGHTS_ALL_ON:
+						memset((DMX_Config + j)->featureArray, 255, data[i]);
+						break;
+					case initState_e::LIGHT_LEAVE_AS_IS:
+						break;
+					}
+					i++;
+				}
+			}
+
+
+#if FS_DEBUG
+			for (uint8_t j = 0; j < DMX_Conifg_len; j++)
+			{
+				std::cout << "read config: " << to_string((uint8_t)(DMX_Config + j)->spotIndex) << std::endl;
+				std::cout << "read config: " << to_string((uint8_t)(DMX_Config + j)->featureCount) << std::endl;
+			}
+#endif
+			std::cout << "data len: " << to_string((uint8_t)len) << std::endl;
+			break;
+		case CMD_CS_SET_FEATURE_VALUE:
+			std::cout << "server acknoledged set feature request" << std::endl;
+			break;
+		case CMD_CS_GET_FEATURE_VALUE:
+			//find spot and feature whos value was requested
+			for (int i = 0; i < DMX_Conifg_len; i++)
+			{
+				//find matching spot, and check if the requested feature is within range of spots features
+				if ((DMX_Config + i)->spotIndex == data[2] && data[3] <= (DMX_Config + i)->featureCount)
+				{
+					(DMX_Config + i)->featureArray[data[3]] = data[4];
+					break;
+				}
+			}
+			break;
+		default:
+			std::cout << "ERROR: default-case inside Client: CallbackHandler.cpp swtich() was hit" << std::endl;
+			break;
+
+		}
+	}
 }
