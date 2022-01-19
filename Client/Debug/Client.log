@@ -1,10 +1,1 @@
-﻿  CallbackHandler.cpp
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Client\CallbackHandler.cpp(69,38): warning C4018: "<": Konflikt zwischen "signed" und "unsigned"
-  Client.cpp
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Client\Client.cpp(172,10): warning C4473: "scanf_s": nicht genügend Argumente für Formatzeichenfolge übergeben
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Client\Client.cpp(172,10): message : Platzhalter und deren Parameter erwarten 2 variadic-Argumente, es wurden aber 1 variadic-Argumente bereitgestellt.
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Client\Client.cpp(172,10): message : Das fehlende variadic-Argument "2" ist für die Zeichenfolge "%c" erforderlich.
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Client\Client.cpp(172,10): message : Dieses Argument wird als Puffergröße verwendet.
-  Code wird generiert...
-C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Client\Client.cpp(256): warning C4715: "spotsMenu": Nicht alle Codepfade geben einen Wert zurück.
-  Client.vcxproj -> C:\Users\fabia\OneDrive\001_FH_Technikum\106_WS21\KUF_Kommunikation_und_Feldbusse\Projekt\MME2019\Debug\Client.exe
+﻿

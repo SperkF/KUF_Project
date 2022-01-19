@@ -29,6 +29,7 @@ using std::to_string;
 
 using namespace std;
 
+void setFeatureValue(DmxDllAccess* myDll, uint8_t spotIndex, uint8_t featureIndex, uint8_t value);
 #define FS_DEBUG 1
 
 // '\0' character takes up 1-byte
@@ -143,6 +144,9 @@ bool processetFeatureRequest(char* retMessage, int* retMessageLen, const char* d
 
 void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
 {
+    //setFeatureValue(&myDll, 0, 1, 255);
+    //setFeatureValue(&myDll, 0, 3, 255);
+
     char *retMessage = NULL;
     int retMessageLen = 0;
 
@@ -151,6 +155,8 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
     uint8_t sentFeatureValue = 0;
     uint8_t requestedFeatureValue = 0;
     bool argumentCheck = false;
+    int spotIndex = 0;
+    int featureIndex = 0;
 
     switch (data[0]) {
     case CMD_CS_HANDSHAKE_REQUEST:
@@ -182,9 +188,17 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
             {
             case ARG_CS_TURN_ALL_LIGHT_ON:
                 memset((DMX_Config + i)->featureArray, 255, (DMX_Config + i)->featureCount);
+                for (int j = 0; j < (DMX_Config + i)->featureCount; j++)
+                {
+                    setFeatureValue(&myDll, (DMX_Config + i)->spotIndex, j, 255);
+                }
                 break;
             case ARG_CS_TURN_ALL_LIGHT_OFF:
                 memset((DMX_Config + i)->featureArray, 0, (DMX_Config + i)->featureCount);
+                for (int j = 0; j < (DMX_Config + i)->featureCount; j++)
+                {
+                    setFeatureValue(&myDll, (DMX_Config + i)->spotIndex, j, 0);
+                }
                 break;
             case ARG_CS_LEAVE_LIGHT_IN_CUR_STATE:
                 break;
@@ -258,6 +272,8 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
                 (DMX_Config + i)->featureArray[sentFeatureIndex-1] = sentFeatureValue;
                 cout << "Feature can be set to value: " << to_string((DMX_Config + i)->featureArray[sentFeatureIndex-1]) << endl;
                 argumentCheck = true;
+                spotIndex = (DMX_Config + i)->spotIndex;
+                featureIndex = sentFeatureIndex;
                 break;
             }
         }
@@ -275,6 +291,7 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
             *
             *
             */
+            setFeatureValue(&myDll, spotIndex, featureIndex, sentFeatureValue);
             //reply to client with ACK
             //allocate proper memory
             retMessageLen = 2 + STRING_DELIMITER_SIZE;
@@ -322,4 +339,15 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
 */
 bool processetFeatureRequest(char* retMessage, int* retMessageLen, const char* data) {
     return false;
+}
+
+void setFeatureValue(DmxDllAccess *myDll, uint8_t spotIndex, uint8_t featureIndex, uint8_t value) {
+    int indexValuePair[2];
+    indexValuePair[0] = spotIndex + featureIndex -2;
+    indexValuePair[1] = value;
+
+    std::cout << "dmx command: index= " << to_string((int)indexValuePair[0]) << "value= " << to_string((int)indexValuePair[1]) << std::endl;
+
+    if(!myDll->SetChannelValue(indexValuePair, 1))
+        cerr << "error setting values" << endl;
 }
